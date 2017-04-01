@@ -1,0 +1,67 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+
+namespace bien4read
+{
+    /// <summary>
+    /// MainWindow.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        private void btnPath_Click(object sender, RoutedEventArgs e)
+        {
+            //경로를 선택할 수 있는 창을 보여준다.
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            if (d.ShowDialog() != System.Windows.Forms.DialogResult.OK) {
+                return;
+            }
+
+            String selPath = d.SelectedPath;
+            tbPath.Text = selPath;
+        }
+
+        private void btnChange_Click(object sender, RoutedEventArgs e)
+        {
+            // 해당 경로가 유효한지 확인
+            String selPath = tbPath.Text;
+
+            // 선택한 경로 이하의 모든 폴더 및 파일을 읽는다.
+            System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(@"d:\download");
+            if (di.Exists == false) {
+                System.Windows.MessageBox.Show("유효한경로를 선택하세요");
+                return;
+            }
+            
+
+            foreach (System.IO.FileInfo f in di.GetFiles())
+                listBox1.Items.Add(f.Name + "  " + f.Extension)
+
+
+            // txt 의 경우에는, UTF-8로 변환한다.
+            // 줄바꿈을 제거한다.
+
+                // zip 의 경우에는, cbz로 변환한다.
+                // 이미지의 경우, 잘라내는 기능을 추가한다.
+
+        }
+    }
+}

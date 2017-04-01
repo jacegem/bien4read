@@ -1,0 +1,163 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Forms;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+
+namespace bien4read
+{
+    /// <summary>
+    /// MainWindow.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        List<String> m_pathList = new List<string>();
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            tbPath.Text = @"D:\test";
+
+            addMsg("프로그램이 시작되었습니다.");
+        }
+
+        private void addMsg(string v)
+        {
+            // 현재시각 구하기
+            String t = System.DateTime.Now.ToString("[hh:mm:ss]:");
+            string newMsg = t + v + "\n";
+            tbMsg.Text = tbMsg.Text.Insert(0, newMsg);
+            //tbMsg.SelectedText = newMsg;
+            //tbMsg.Text = t + v + "\n" + tbMsg.Text;
+
+            int lineIndex = tbMsg.GetLineIndexFromCharacterIndex(tbMsg.CaretIndex);
+            tbMsg.ScrollToLine(lineIndex);
+        }
+
+        private void btnPath_Click(object sender, RoutedEventArgs e)
+        {
+            //경로를 선택할 수 있는 창을 보여준다.
+            FolderBrowserDialog d = new FolderBrowserDialog();
+            d.SelectedPath = tbPath.Text;
+            if (d.ShowDialog() != System.Windows.Forms.DialogResult.OK) {
+                return;
+            }
+
+            String selPath = d.SelectedPath;
+            tbPath.Text = selPath;
+        }
+
+        private void btnChange_Click(object sender, RoutedEventArgs e)
+        {
+            // 해당 경로가 유효한지 확인
+            String selPath = tbPath.Text;
+
+            // 선택한 경로 이하의 모든 폴더 및 파일을 읽는다.
+            System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(selPath);
+            if (di.Exists == false) {
+                System.Windows.MessageBox.Show("유효한경로를 선택하세요");
+                return;
+            }
+
+            // 기존 정보 모두 삭제
+            m_pathList.Clear();
+
+            addFilesToList(di);
+
+           
+                    
+                
+
+//            foreach (System.IO.FileInfo f in di.GetFiles())
+  //              listBox1.Items.Add(f.Name + "  " + f.Extension)
+
+
+            // txt 의 경우에는, UTF-8로 변환한다.
+            // 줄바꿈을 제거한다.
+
+                // zip 의 경우에는, cbz로 변환한다.
+                // 이미지의 경우, 잘라내는 기능을 추가한다.
+
+        }
+
+        private void addFilesToList(DirectoryInfo di)
+        {
+            // 파일 정보 가져오기
+            foreach (System.IO.FileInfo f in di.GetFiles())
+            {
+                //System.Windows.Forms.MessageBox.Show(f.FullName);
+                m_pathList.Add(f.FullName);
+                addMsg(f.FullName + " 파일이 추가되었습니다.");
+            }
+
+            // 폴더 정보 가져오기
+            foreach (System.IO.DirectoryInfo d in di.GetDirectories()) {
+                addFilesToList(d);
+            }
+        }
+
+        private void tbPath_Drop(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop, true))
+            {
+                string[] droppedFilePaths = e.Data.GetData(System.Windows.DataFormats.FileDrop, true) as string[];
+                foreach (var path in droppedFilePaths)
+                {
+                    string location = null;
+                    int pxWidth = 0, pxHeight = 0;
+
+                    FileInfo fi = new FileInfo(path);
+                    //fi.Length  //File size
+                    //fi.DirectoryName //Directory
+                    using (var fs = fi.OpenRead())
+                    {
+                        try
+                        {
+                            var bmpFrame = BitmapFrame.Create(fs);
+                            var m = bmpFrame.Metadata as BitmapMetadata;
+                            if (m != null)
+                                location = m.Location;
+                            pxWidth = bmpFrame.PixelWidth;
+                            pxHeight = bmpFrame.PixelHeight;
+                        }
+                        catch
+                        {
+                            //File isn't image
+                        }
+                    }
+
+                    //this.fileList.Items.Add(string.Format("({0}x{1}), location: {2}", pxWidth, pxHeight, location));
+                }
+            }
+        }
+
+        private void tbPath_PreviewDragEnter(object sender, System.Windows.DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+            {
+                e.Effects = System.Windows.DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effects = System.Windows.DragDropEffects.None;
+            }
+        }
+
+        private void tbPath_PreviewDragOver(object sender, System.Windows.DragEventArgs e)
+        {
+            e.Handled = true;
+        }
+    }
+}
