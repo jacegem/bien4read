@@ -50,7 +50,7 @@ namespace bien4read
 
         private void addFilesToList(DirectoryInfo di)
         {
-            // 마지막 경로가 이 프로그램을 통해서 만든 경로라면 처리하지 않는다.->
+            // 마지막 경로가 이 프로그램을 통해서 만든 경로라면 처리하지 않는다.->->
             int totalLen = di.FullName.Length;
             int myLen = MY_FOLDER.Length;
 
